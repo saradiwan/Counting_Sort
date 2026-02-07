@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Counting Sort</title>
+    <link rel="stylesheet" href="project.css" />
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <a href="#" class="logo">Counting Sort Visualizer</a>
+        <nav class="navbar">
+            <a href="index.html">Back</a>
+             <a href="demo.html">Demo</a>
+        </nav>
+    </header>
+
+    <!-- Centered Glass Box -->
+    <div class="intro-box">
+        <h2>Counting Sort</h2>
+
+        <p>
+            Enter an array of <strong>positive integers</strong> separated by commas.
+            The algorithm will sort the array using Counting Sort.
+        </p>
+
+        <form onsubmit="countingSort(event)">
+            <input
+                type="text"
+                id="arrayInput"
+                placeholder="Example: 4, 2, 2, 8, 3"
+                required
+            />
+
+            <button type="submit">Sort Array</button>
+
+            <p id="result"></p>
+        </form>
+    </div>
+
+    <script src="project.js"></script>
+</body>
+</html>

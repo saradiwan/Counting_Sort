@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Counting Sort Animation</title>
+<link rel="stylesheet" href="project.css" />
+
+<style>
+.box-row {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin: 1.5rem 0;
+    flex-wrap: wrap;
+}
+
+.box {
+    width: 45px;
+    height: 45px;
+    border: 2px solid #d3ad7f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    border-radius: 6px;
+    background: rgba(0,0,0,0.6);
+}
+
+.highlight {
+    background: #d3ad7f;
+    color: #000;
+    transform: scale(1.1);
+    transition: 0.5s;
+}
+
+.step-text {
+    text-align: center;
+    font-size: 1.4rem;
+    margin-top: 1rem;
+    color: #ddd;
+}
+
+.controls {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.controls button {
+    padding: 0.6rem 1.2rem;
+    font-size: 1.4rem;
+    margin: 0 0.5rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    background: #d3ad7f;
+    color: #000;
+}
+</style>
+</head>
+
+<body>
+
+<header class="header">
+    <a href="#" class="logo">Counting Sort Visualizer</a>
+    <nav class="navbar">
+        <a href="project.html">Back</a>
+    </nav>
+</header>
+
+<div class="intro-box">
+    <h2>Counting Sort Animation</h2>
+
+    <p>
+        This animation explains Counting Sort step by step,
+        like a handwritten paper explanation.
+    </p>
+
+    <h3 style="text-align:center;color:#d3ad7f;">Input Array (A)</h3>
+    <div class="box-row" id="inputRow"></div>
+
+    <h3 style="text-align:center;color:#d3ad7f;">Count Array (C)</h3>
+    <div class="box-row" id="countRow"></div>
+
+    <h3 style="text-align:center;color:#d3ad7f;">Sorted Output (B)</h3>
+    <div class="box-row" id="outputRow"></div>
+
+    <div class="controls">
+        <button onclick="pauseAnimation()">Pause</button>
+        <button onclick="restartAnimation()">Start Again</button>
+        <button onclick="resumeAnimation()">Resume</button>
+        <button onclick="stopAnimation()">Stop</button>
+    </div>
+
+    <p class="step-text" id="stepText">Starting Counting Sort...</p>
+</div>
+
+<script>
+const inputArray = [3, 1, 2, 3, 2];
+const maxValue = Math.max(...inputArray);
+let countArray = new Array(maxValue + 1).fill(0);
+
+const inputRow = document.getElementById("inputRow");
+const countRow = document.getElementById("countRow");
+const outputRow = document.getElementById("outputRow");
+const stepText = document.getElementById("stepText");
+
+/* create boxes */
+function createBoxes() {
+    inputRow.innerHTML = "";
+    countRow.innerHTML = "";
+    outputRow.innerHTML = "";
+
+    inputArray.forEach(num => {
+        const div = document.createElement("div");
+        div.className = "box";
+        div.textContent = num;
+        inputRow.appendChild(div);
+    });
+
+    for (let i = 1; i <= maxValue; i++) {
+        const div = document.createElement("div");
+        div.className = "box";
+        div.textContent = "0";
+        countRow.appendChild(div);
+    }
+}
+
+createBoxes();
+
+/* helper: remove all highlights */
+function clearHighlights() {
+    document.querySelectorAll(".highlight").forEach(el => {
+        el.classList.remove("highlight");
+    });
+}
+
+/* pause / stop control */
+let paused = false;
+let stopped = false;
+let resumeCallback = null;
+
+function pauseAnimation() {
+    paused = true;
+    stepText.textContent = "⏸ Animation Paused";
+}
+
+function resumeAnimation() {
+    if (!stopped && paused && resumeCallback) {
+        paused = false;
+        resumeCallback();
+    }
+}
+
+function stopAnimation() {
+    paused = false;
+    stopped = true;
+    resumeCallback = null;
+    clearHighlights(); // 🔥 key difference
+    stepText.textContent = "⛔ Animation Stopped";
+}
+
+/* restart */
+function restartAnimation() {
+    paused = false;
+    stopped = false;
+    i = 0;
+    j = 1;
+    countArray = new Array(maxValue + 1).fill(0);
+    createBoxes();
+    stepText.textContent = "Restarting Counting Sort...";
+    setTimeout(countStep, 800);
+}
+
+/* animation */
+let i = 0;
+function countStep() {
+    if (stopped) return;
+
+    if (i < inputArray.length) {
+        resumeCallback = () => {
+            if (paused || stopped) return;
+
+            const boxes = inputRow.children;
+            const cBoxes = countRow.children;
+            const value = inputArray[i];
+
+            boxes[i].classList.add("highlight");
+            stepText.textContent = `Reading ${value} from input array`;
+
+            setTimeout(() => {
+                if (paused || stopped) return;
+
+                boxes[i].classList.remove("highlight");
+                cBoxes[value - 1].classList.add("highlight");
+                countArray[value]++;
+                cBoxes[value - 1].textContent = countArray[value];
+                stepText.textContent = `Increment count of ${value}`;
+
+                setTimeout(() => {
+                    if (paused || stopped) return;
+
+                    cBoxes[value - 1].classList.remove("highlight");
+                    i++;
+                    countStep();
+                }, 1000);
+            }, 1000);
+        };
+        resumeCallback();
+    } else {
+        buildOutput();
+    }
+}
+
+let j = 1;
+function buildOutput() {
+    if (stopped) return;
+
+    resumeCallback = () => {
+        if (paused || stopped) return;
+
+        if (j <= maxValue) {
+            if (countArray[j] > 0) {
+                const div = document.createElement("div");
+                div.className = "box highlight";
+                div.textContent = j;
+                outputRow.appendChild(div);
+
+                stepText.textContent = `Placing ${j} in sorted array`;
+                countArray[j]--;
+
+                setTimeout(() => {
+                    if (paused || stopped) return;
+
+                    div.classList.remove("highlight");
+                    buildOutput();
+                }, 1000);
+            } else {
+                j++;
+                buildOutput();
+            }
+        } else {
+            stepText.textContent = "✅ Counting Sort Completed";
+        }
+    };
+    resumeCallback();
+}
+
+setTimeout(countStep, 1000);
+</script>
+
+</body>
+</html>
